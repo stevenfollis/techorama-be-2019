@@ -25,11 +25,13 @@ steps:
   displayName: 'Get Docker Version'
 
 - script: |
+    pwd
     docker build \
       --build-arg BASE_BUILD_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
       --build-arg BASE_BUILD_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG)" \
       --build-arg BASE_RUNTIME_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
       --build-arg BASE_RUNTIME_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG)" \
-      --tag $(DOCKER_REGISTRY_IMAGE):$(DOCKER_REGISTRY_IMAGE_TAG)
+      --tag $(DOCKER_REGISTRY_IMAGE):$(DOCKER_REGISTRY_IMAGE_TAG) \
+      ./pipelines/aspnetcore
     docker image ls
   displayName: 'Build Docker Image'
