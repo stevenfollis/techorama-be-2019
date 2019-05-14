@@ -1,7 +1,0 @@
-version: "3.6"
-services:
-  aspnetcore:
-    build: aspnetcore
-    image: docker.io/stevenfollis/aspnetcore
-    ports:
-    - 8080:80
