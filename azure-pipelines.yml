@@ -34,4 +34,30 @@ steps:
     # Push image into Registry
     docker push $(DOCKER_REGISTRY_IMAGE):$(Build.SourceVersion)
   displayName: 'Push Docker Image'
+
+- task: DownloadSecureFile@1
+  inputs:
+    secureFile: 'ucp-bundle-azure-devops.zip'
+
+- script: |
+    # Ensure unzip package is installed
+    if ! [ -x "$(command -v unzip)" ]; then
+      echo "Installing dependency - unzip"
+      sudo apt-get update
+      sudo apt-get install --yes --quiet unzip
+    fi
+
+    echo "Agent Temporary Directory contains:"
+    ls $(Agent.TempDirectory)
     
+    echo "Unzipping the client bundle"
+    cd $(Agent.TempDirectory)
+    
+    unzip \
+      -d ./bundle \
+      ucp-bundle-azure-devops.zip
+
+    # Source client bundle
+    cd ./bundle
+    ls -a
+  displayName: 'Setup Docker Client Bundle'
