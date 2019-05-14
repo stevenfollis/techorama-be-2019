@@ -28,9 +28,11 @@ steps:
 
 - script: |
     # Login to the Docker Registry
+    echo $(DOCKER_REGISTRY_TOKEN) | \
     docker login $(DOCKER_REGISTRY_FQDN) \
       --username $(DOCKER_REGISTRY_USERNAME) \
-      --password $(DOCKER_REGISTRY_TOKEN)
+      --password-stdin
+      
     # Push image into Registry
     docker push $(DOCKER_REGISTRY_IMAGE):$(Build.SourceVersion)
   displayName: 'Push Docker Image'
