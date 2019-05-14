@@ -30,7 +30,7 @@ steps:
     # Login to the Docker Registry
     docker login $(DOCKER_REGISTRY_FQDN) \
       --username $(DOCKER_REGISTRY_USERNAME) \
-      --password $(DOCKER_REGISTRY_PASSWORD)
+      --password $(DOCKER_REGISTRY_TOKEN)
     # Push image into Registry
     docker push $(DOCKER_REGISTRY_IMAGE):$(Build.SourceVersion)
   displayName: 'Push Docker Image'
