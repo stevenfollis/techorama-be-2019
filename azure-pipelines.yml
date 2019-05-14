@@ -17,13 +17,6 @@ steps:
   displayName: 'Get Docker Version'
 
 - script: |
-    docker version
-    echo "Updating Docker"
-    sudo apt-get install --only-upgrade docker-ce
-    docker version
-  displayName: 'Update Docker'
-
-- script: |
     echo "Getting Docker Version"
     docker version
     echo "$(DOCKER_BASE_BUILD_IMAGE):$(DOCKER_BASE_BUILD_IMAGE_TAG)"
