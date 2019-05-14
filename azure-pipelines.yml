@@ -17,9 +17,19 @@ steps:
   displayName: 'Get Docker Version'
 
 - script: |
-    pwd
-    ls
-    echo "Using $(DOCKER_BASE_BUILD_IMAGE), $(DOCKER_BASE_BUILD_IMAGE_TAG), $(DOCKER_BASE_RUNTIME_IMAGE), $(DOCKER_BASE_RUNTIME_IMAGE_TAG)"
+    docker version
+    echo "Updating Docker"
+    sudo apt-get install --only-upgrade docker-ce
+    docker version
+  displayName: 'Update Docker'
+
+- script: |
+    echo "Getting Docker Version"
+    docker version
+    echo "$(DOCKER_BASE_BUILD_IMAGE):$(DOCKER_BASE_BUILD_IMAGE_TAG)"
+  displayName: 'Get Docker Version'
+
+- script: |
     docker build \
       --build-arg BASE_BUILD_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
       --build-arg BASE_BUILD_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG) \
@@ -27,5 +37,4 @@ steps:
       --build-arg BASE_RUNTIME_IMAGE_TAG=$(DOCKER_BASE_RUNTIME_IMAGE_TAG) \
       --tag $(DOCKER_REGISTRY_IMAGE):$(DOCKER_REGISTRY_IMAGE_TAG) \
       ./pipelines/aspnetcore
-    docker image ls
   displayName: 'Build Docker Image'
