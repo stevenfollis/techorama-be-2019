@@ -26,6 +26,8 @@ steps:
 
 - script: |
     pwd
+    ls
+    echo "Using $(DOCKER_BASE_BUILD_IMAGE), $(DOCKER_BASE_BUILD_IMAGE_TAG), $(DOCKER_BASE_RUNTIME_IMAGE), $(DOCKER_BASE_RUNTIME_IMAGE)"
     docker build \
       --build-arg BASE_BUILD_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
       --build-arg BASE_BUILD_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG)" \
