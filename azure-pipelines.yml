@@ -20,5 +20,5 @@ steps:
 
 - script: |
     echo "Getting Docker Version"
-    docker Version
+    docker version
   displayName: 'Get Docker Version'
