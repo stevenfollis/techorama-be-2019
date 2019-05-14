@@ -23,3 +23,13 @@ steps:
     docker version
     echo "$(DOCKER_BASE_BUILD_IMAGE):$(DOCKER_BASE_BUILD_IMAGE_TAG)"
   displayName: 'Get Docker Version'
+
+- script: |
+    docker build \
+      --build-arg BASE_BUILD_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
+      --build-arg BASE_BUILD_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG)" \
+      --build-arg BASE_RUNTIME_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
+      --build-arg BASE_RUNTIME_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG)" \
+      --tag $(DOCKER_REGISTRY_IMAGE):$(DOCKER_REGISTRY_IMAGE_TAG)
+    docker image ls
+  displayName: 'Build Docker Image'
