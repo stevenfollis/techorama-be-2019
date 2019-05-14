@@ -1,0 +1,9 @@
+version: 0.1.0
+name: howdy-app
+description: sample description
+maintainers:
+  - name: docker.io/stevenfollis
+    email: 
+targets:
+  swarm: true
+  kubernetes: true
