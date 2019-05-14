@@ -60,4 +60,5 @@ steps:
     # Source client bundle
     cd ./bundle
     ls -a
+    docker trust
   displayName: 'Setup Docker Client Bundle'
