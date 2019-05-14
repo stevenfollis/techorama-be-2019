@@ -17,12 +17,6 @@ steps:
   displayName: 'Get Docker Version'
 
 - script: |
-    echo "Getting Docker Version"
-    docker version
-    echo "$(DOCKER_BASE_BUILD_IMAGE):$(DOCKER_BASE_BUILD_IMAGE_TAG)"
-  displayName: 'Get Docker Version'
-
-- script: |
     docker build \
       --build-arg BASE_BUILD_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
       --build-arg BASE_BUILD_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG) \
@@ -31,3 +25,13 @@ steps:
       --tag $(DOCKER_REGISTRY_IMAGE):$(Build.SourceVersion) \
       ./pipelines/aspnetcore
   displayName: 'Build Docker Image'
+
+- script: |
+    # Login to the Docker Registry
+    docker login $(DOCKER_REGISTRY_FQDN) \
+      --username $(DOCKER_REGISTRY_USERNAME) \
+      --password $(DOCKER_REGISTRY_PASSWORD)
+    # Push image into Registry
+    docker push $(DOCKER_REGISTRY_IMAGE):$(Build.SourceVersion)
+  displayName: 'Push Docker Image'
+    
