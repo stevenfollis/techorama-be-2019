@@ -10,14 +10,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
-
 - script: |
     echo "Getting Docker Version"
     docker version
@@ -28,7 +20,7 @@ steps:
     pwd
     ls
     echo "Using $(DOCKER_BASE_BUILD_IMAGE), $(DOCKER_BASE_BUILD_IMAGE_TAG), $(DOCKER_BASE_RUNTIME_IMAGE), $(DOCKER_BASE_RUNTIME_IMAGE_TAG)"
-    echo docker build \
+    docker build \
       --build-arg BASE_BUILD_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
       --build-arg BASE_BUILD_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG) \
       --build-arg BASE_RUNTIME_IMAGE=$(DOCKER_BASE_RUNTIME_IMAGE) \
