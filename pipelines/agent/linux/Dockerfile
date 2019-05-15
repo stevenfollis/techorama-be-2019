@@ -1,11 +1,12 @@
 #=========================================================
-# Stage 1: Download Docker CLI binary 
+# Stage 1: Download Docker CLI & Docker App binaries 
 #=========================================================
 FROM alpine:latest AS dockercli
 
-ARG DOCKER_VERSION=18.09.0
+ARG DOCKER_BRANCH=test
+ARG DOCKER_VERSION=19.03.0-beta4
 
-RUN wget --output docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz && \
+RUN wget --output docker.tgz https://download.docker.com/linux/static/${DOCKER_BRANCH}/x86_64/docker-${DOCKER_VERSION}.tgz && \
     tar -zxvf docker.tgz && \
     chmod +x docker/docker
 
@@ -62,6 +63,7 @@ RUN chmod +x start.sh
 USER root 
 
 # Copy binaries from earlier build stages
+RUN mkdir --parents ~/.docker/cli-plugins
 COPY --from=dockercli docker/docker /usr/local/bin/docker
 COPY --from=kubectl ./kubectl /usr/local/bin/kubectl
 COPY --from=helm /linux-amd64/helm /usr/local/bin/helm
