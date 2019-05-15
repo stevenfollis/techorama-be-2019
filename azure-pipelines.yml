@@ -48,13 +48,9 @@ steps:
       sudo apt-get update
       sudo apt-get install --yes --quiet unzip
     fi
-
-    echo "Agent Temporary Directory contains:"
-    ls $(Agent.TempDirectory)
     
     echo "Unzipping the client bundle"
     cd $(Agent.TempDirectory)
-    
     unzip \
       -d ./bundle \
       ucp-bundle-azure-devops.zip
