@@ -44,14 +44,9 @@ steps:
     secureFile: 'ucp-bundle-azure-devops.zip'
 
 - script: |
-    #cd $(Agent.TempDirectory)
     unzip \
       -d $(Agent.TempDirectory)/bundle \
       $(Agent.TempDirectory)/ucp-bundle-azure-devops.zip
-
-    # Source client bundle
-    #cd ./bundle
-    #ls -a
     docker trust key load $(Agent.TempDirectory)/bundle/key.pem
   displayName: 'Setup Docker Client Bundle'
 
