@@ -39,10 +39,6 @@ steps:
       --password-stdin
   displayName: 'Login to Docker Trusted Registry'
 
-- script: |      
-    docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
-  displayName: 'Push Docker Image'
-
 - task: DownloadSecureFile@1
   inputs:
     secureFile: 'ucp-bundle-azure-devops.zip'
@@ -57,5 +53,10 @@ steps:
     # Source client bundle
     cd ./bundle
     ls -a
-    docker trust
+    docker trust key load key.pem
+    export DOCKER_CONTENT_TRUST=1
   displayName: 'Setup Docker Client Bundle'
+
+- script: |      
+    docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+  displayName: 'Push Docker Image'
