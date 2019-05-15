@@ -25,10 +25,8 @@ steps:
     # Build Docker Image by passing in build time arguments
     # Tags image based on the short git commit ID
     docker build \
-      --build-arg BASE_BUILD_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
-      --build-arg BASE_BUILD_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG) \
-      --build-arg BASE_RUNTIME_IMAGE=$(DOCKER_BASE_RUNTIME_IMAGE) \
-      --build-arg BASE_RUNTIME_IMAGE_TAG=$(DOCKER_BASE_RUNTIME_IMAGE_TAG) \
+      --build-arg BASE_IMAGE_BUILD=$(DOCKER_BASE_IMAGE_BUILD) \
+      --build-arg BASE_IMAGE_RUNTIME=$(DOCKER_BASE_IMAGE_RUNTIME) \
       --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" \
       ./pipelines/app/aspnetcore
   displayName: 'Build Docker Image'
