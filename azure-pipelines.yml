@@ -14,7 +14,6 @@ steps:
 - script: |
     echo "Getting Docker Version"
     docker version
-    echo "$(DOCKER_BASE_BUILD_IMAGE):$(DOCKER_BASE_BUILD_IMAGE_TAG)"
   displayName: 'Get Docker Version'
 
 - script: |
@@ -33,8 +32,9 @@ steps:
     docker login $(DOCKER_REGISTRY_FQDN) \
       --username $(DOCKER_REGISTRY_USERNAME) \
       --password-stdin
-      
-    # Push image into Registry
+  displayName: 'Login to Docker Trusted Registry'
+
+- script: |      
     docker push $(DOCKER_REGISTRY_IMAGE):$(Build.SourceVersion)
   displayName: 'Push Docker Image'
 
@@ -43,13 +43,6 @@ steps:
     secureFile: 'ucp-bundle-azure-devops.zip'
 
 - script: |
-    # Ensure unzip package is installed
-    if ! [ -x "$(command -v unzip)" ]; then
-      echo "Installing dependency - unzip"
-      sudo apt-get update
-      sudo apt-get install --yes --quiet unzip
-    fi
-    
     echo "Unzipping the client bundle"
     cd $(Agent.TempDirectory)
     unzip \
