@@ -1,0 +1,46 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - pipelines/agent/linux/*
+
+pool:
+  # vmImage: 'ubuntu-latest'
+  name: 'Shared SE - Linux'
+
+steps:
+- script: |
+    echo "Getting Docker Version"
+    docker version
+  displayName: 'Get Docker Version'
+
+- script: |
+    # Build Docker Image by passing in build time arguments
+    # Tags image based on the short git commit ID
+    docker build \
+      --build-arg BASE_BUILD_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
+      --build-arg BASE_BUILD_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG) \
+      --build-arg BASE_RUNTIME_IMAGE=$(DOCKER_BASE_RUNTIME_IMAGE) \
+      --build-arg BASE_RUNTIME_IMAGE_TAG=$(DOCKER_BASE_RUNTIME_IMAGE_TAG) \
+      --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" \
+      ./pipelines/agent/linux
+  displayName: 'Build Docker Image'
+
+- script: |
+    # Login to the Docker Trusted Registry
+    docker login $(DOCKER_REGISTRY_FQDN) \
+      --username $(DOCKER_REGISTRY_USERNAME) \
+      --password $(DOCKER_REGISTRY_TOKEN)
+  displayName: 'Login to Docker Trusted Registry'
+
+- script: |
+    # Push image to Docker Trusted Registry
+    docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+  displayName: 'Push Docker Image'
