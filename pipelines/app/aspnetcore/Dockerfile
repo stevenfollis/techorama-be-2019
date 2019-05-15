@@ -17,9 +17,9 @@ COPY aspnetapp/. ./aspnetapp/
 WORKDIR /app/aspnetapp
 RUN dotnet publish -c Release -o out
 
-#=======================================================
+#=========================================================
 # Stage 2: Copy built artifact into the slim runtime image 
-#=======================================================
+#=========================================================
 FROM ${BASE_IMAGE_RUNTIME} AS runtime
 EXPOSE 80
 WORKDIR /app
