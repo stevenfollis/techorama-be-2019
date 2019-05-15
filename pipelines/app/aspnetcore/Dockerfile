@@ -1,6 +1,9 @@
 ARG BASE_IMAGE_BUILD=mcr.microsoft.com/dotnet/core/sdk:2.1
 ARG BASE_IMAGE_RUNTIME=mcr.microsoft.com/dotnet/core/aspnet:2.1
 
+#=======================================================
+# Stage 1: Use the larger SDK image to compile .NET code
+#=======================================================
 FROM ${BASE_IMAGE_BUILD} AS build
 WORKDIR /app
 
@@ -14,6 +17,9 @@ COPY aspnetapp/. ./aspnetapp/
 WORKDIR /app/aspnetapp
 RUN dotnet publish -c Release -o out
 
+#=======================================================
+# Stage 2: Copy built artifact into the slim runtime image 
+#=======================================================
 FROM ${BASE_IMAGE_RUNTIME} AS runtime
 EXPOSE 80
 WORKDIR /app
