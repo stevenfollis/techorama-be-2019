@@ -1,6 +1,6 @@
 ARG BASE_BUILD_IMAGE=mcr.microsoft.com/dotnet/core/sdk
 ARG BASE_BUILD_IMAGE_TAG=2.1
-ARG BASE_RUNTIME_IMAGE=mcr.microsoft.com/dotnet/core/runtime
+ARG BASE_RUNTIME_IMAGE=mcr.microsoft.com/dotnet/core/aspnet
 ARG BASE_RUNTIME_IMAGE_TAG=2.1
 
 FROM ${BASE_BUILD_IMAGE}:${BASE_BUILD_IMAGE_TAG} AS build
