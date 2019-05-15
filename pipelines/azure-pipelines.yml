@@ -22,6 +22,8 @@ steps:
   displayName: 'Get Docker Version'
 
 - script: |
+    # Build Docker Image by passing in build time arguments
+    # Tags image based on the short git commit ID
     docker build \
       --build-arg BASE_BUILD_IMAGE=$(DOCKER_BASE_BUILD_IMAGE) \
       --build-arg BASE_BUILD_IMAGE_TAG=$(DOCKER_BASE_BUILD_IMAGE_TAG) \
@@ -32,7 +34,7 @@ steps:
   displayName: 'Build Docker Image'
 
 - script: |
-    # Login to the Docker Registry
+    # Login to the Docker Trusted Registry
     docker login $(DOCKER_REGISTRY_FQDN) \
       --username $(DOCKER_REGISTRY_USERNAME) \
       --password $(DOCKER_REGISTRY_TOKEN)
@@ -52,7 +54,9 @@ steps:
     docker trust key load $(Agent.TempDirectory)/bundle/key.pem
   displayName: 'Setup Docker Client Bundle'
 
-- script: |      
+- script: |
+    # Push image to Docker Trusted Registry and sign with DCT
+    # Makes use of environment variables
     DOCKER_CONTENT_TRUST=1 \
     docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
   displayName: 'Push Docker Image'
