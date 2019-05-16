@@ -65,10 +65,10 @@ steps:
     eval "$(<env.sh)"
 
     # Update with Helm
-    cd $(Agent.BuildDirectory)
+    cd $(Build.SourcesDirectory)
     ls -l
     helm upgrade \
       web \
-      $(Agent.BuildDirectory)/pipelines/helm/techorama \
+      $(Build.SourcesDirectory)/pipelines/helm/techorama \
       --tiller-namespace se-stevenfollis
   displayName: 'Update application with Helm'
