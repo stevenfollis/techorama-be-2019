@@ -62,7 +62,8 @@ steps:
 - script: |
     # Source Docker Client bundle
     # Connects Helm to UCP cluster
-    source $(Agent.TempDirectory)/bundle/env.sh
+    cd $(Agent.TempDirectory)/bundle
+    eval "$(<env.sh)"
 
     # Update with Helm
     helm list
