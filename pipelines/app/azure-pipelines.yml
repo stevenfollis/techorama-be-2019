@@ -66,5 +66,5 @@ steps:
     eval "$(<env.sh)"
 
     # Update with Helm
-    helm list
+    helm list --tiller-namespace se-stevenfollis
   displayName: 'Update application with Helm'
