@@ -60,11 +60,15 @@ steps:
   displayName: 'Push Docker Image'
 
 - script: |
-    # Source Docker Client bundle
-    # Connects Helm to UCP cluster
+    # Connect Helm to cluster via Docker Client Bundle
     cd $(Agent.TempDirectory)/bundle
     eval "$(<env.sh)"
 
     # Update with Helm
-    helm list --tiller-namespace se-stevenfollis
+    cd $(Agent.BuildDirectory)
+    ls -l
+    helm upgrade \
+      web \
+      $(Agent.BuildDirectory)/pipelines/helm/techorama \
+      --tiller-namespace se-stevenfollis
   displayName: 'Update application with Helm'
