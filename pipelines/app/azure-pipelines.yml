@@ -71,3 +71,7 @@ steps:
       $(Build.SourcesDirectory)/pipelines/helm/techorama \
       --tiller-namespace se-stevenfollis
   displayName: 'Update application with Helm'
+
+- script: |
+    docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+  displayName: 'Tidy Up'
