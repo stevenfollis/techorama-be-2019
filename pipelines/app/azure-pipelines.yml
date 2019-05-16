@@ -60,5 +60,10 @@ steps:
   displayName: 'Push Docker Image'
 
 - script: |
+    # Source Docker Client bundle
+    # Connects Helm to UCP cluster
+    source env.sh
+
+    # Update with Helm
     helm list
   displayName: 'Update application with Helm'
