@@ -65,8 +65,14 @@ steps:
     eval "$(<env.sh)"
 
     # Update deployment with Helm
+    cd $(Build.SourcesDirectory)
     helm upgrade \
       web \
-      $(Build.SourcesDirectory)/pipelines/helm/techorama \
+      ./pipelines/helm/techorama \
+      --set "image.tag=$(git rev-parse --short HEAD)" \
       --tiller-namespace se-stevenfollis
   displayName: 'Update application with Helm'
+
+- script: |
+    docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+  displayName: 'Tidy Up'
