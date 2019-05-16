@@ -69,6 +69,7 @@ steps:
     helm upgrade \
       web \
       $(Build.SourcesDirectory)/pipelines/helm/techorama \
+      --set image.tag="$(git rev-parse --short HEAD)" \
       --tiller-namespace se-stevenfollis
   displayName: 'Update application with Helm'
 
