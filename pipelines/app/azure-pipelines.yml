@@ -27,6 +27,7 @@ steps:
     docker build \
       --build-arg BASE_IMAGE_BUILD=$(DOCKER_BASE_IMAGE_BUILD) \
       --build-arg BASE_IMAGE_RUNTIME=$(DOCKER_BASE_IMAGE_RUNTIME) \
+      --no-cache \
       --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" \
       ./pipelines/app/aspnetcore
   displayName: 'Build Docker Image'
