@@ -58,3 +58,7 @@ steps:
     DOCKER_CONTENT_TRUST=1 \
     docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
   displayName: 'Push Docker Image'
+
+- script: |
+    helm list
+  displayName: 'Update application with Helm'
