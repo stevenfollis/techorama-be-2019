@@ -1,0 +1,27 @@
+# Description: build two images - one Linux-based, one Windows-based,
+# and then build a multi-arch image to wrap them.
+
+# Compile Windows Container from a Windows machine & push to registry
+export DOCKER_IMAGE='stevenfollis/howdy-app:linux'
+docker build --tag ${DOCKER_IMAGE} --file Dockerfile.linux .
+docker push ${DOCKER_IMAGE}
+
+# Compile Windows Container from a Windows machine & push to registry
+$env:DOCKER_IMAGE='stevenfollis/howdy-app:windows'
+docker build --tag $env:DOCKER_IMAGE --file Dockerfile.windows .
+docker push $env:DOCKER_IMAGE
+
+# Create a Manifest List from the two images
+docker manifest create \
+  stevenfollis/howdy-app:multi-arch \
+  stevenfollis/howdy-app:linux \
+  stevenfollis/howdy-app:windows
+
+# Inspect Manifest List
+docker manifest inspect stevenfollis/howdy-app:multi-arch
+
+# Push Manifest List to Registry
+docker manifest push stevenfollis/howdy-app:multi-arch
+
+# Run images
+docker run --rm stevenfollis/howdy-app:multi-arch
