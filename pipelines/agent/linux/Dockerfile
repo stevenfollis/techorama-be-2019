@@ -32,6 +32,16 @@ RUN wget --output helm.tar.gz https://storage.googleapis.com/kubernetes-helm/hel
     chmod +x linux-amd64/helm
 
 #=========================================================
+# Stage 4: Download docker-app binary
+# Note: will soon be included with Docker CLI from 19.03+ 
+#=========================================================
+FROM alpine:latest AS docker-app
+
+RUN export OSTYPE="$(uname | tr A-Z a-z)" && \
+    wget --output "/tmp/docker-app-${OSTYPE}.tar.gz" "https://github.com/docker/app/releases/download/v0.6.0/docker-app-${OSTYPE}.tar.gz" && \
+    tar xf "/tmp/docker-app-${OSTYPE}.tar.gz" -C /tmp/
+
+#=========================================================
 # Stage 4: Setup Azure Pipelines remote agent 
 # Documented at https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/docker?view=azure-devops#linux
 #=========================================================
@@ -67,6 +77,7 @@ RUN mkdir --parents ~/.docker/cli-plugins
 COPY --from=dockercli docker/docker /usr/local/bin/docker
 COPY --from=kubectl ./kubectl /usr/local/bin/kubectl
 COPY --from=helm /linux-amd64/helm /usr/local/bin/helm
+COPY --from=docker-app /tmp/docker-app-linux /usr/local/bin/docker-app
 
 CMD ["./start.sh"]
 
