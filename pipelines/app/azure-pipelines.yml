@@ -66,6 +66,7 @@ steps:
     eval "$(<env.sh)"
 
     # Update deployment with Helm
+    ls -l $(Build.SourcesDirectory)/pipelines/helm/techorama
     helm upgrade \
       web \
       $(Build.SourcesDirectory)/pipelines/helm/techorama \
