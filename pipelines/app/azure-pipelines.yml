@@ -66,11 +66,10 @@ steps:
     eval "$(<env.sh)"
 
     # Update deployment with Helm
-    ls -l $(Build.SourcesDirectory)/pipelines/helm/techorama
     helm upgrade \
       web \
       $(Build.SourcesDirectory)/pipelines/helm/techorama \
-      --set image.tag="$(git rev-parse --short HEAD)" \
+      --set "image.tag=$(git rev-parse --short HEAD)" \
       --tiller-namespace se-stevenfollis
   displayName: 'Update application with Helm'
 
