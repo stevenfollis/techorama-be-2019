@@ -10,7 +10,7 @@
 # DOCKER_BASE_IMAGE_RUNTIME: Stage 2/Runtime base image ex. mcr.microsoft.com/dotnet/core/aspnet:2.1
 # DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: Docker Content Trust variable
 # DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: Docker Content Trust variable
-#
+# 
 # ==================================================================
 
 trigger:
