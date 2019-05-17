@@ -1,7 +1,13 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# ==================================================================
+# Environment variables utilized in this Pipeline:
+#
+# DOCKER_BUILDKIT: Set to 1 to use new BuildKit capabilities
+# DOCKER_REGISTRY_USERNAME: Username for registry login
+# DOCKER_REGISTRY_TOKEN: Token/password used to log into registry
+# DOCKER_REGISTRY_FQDN: Base reference for Registry ex. dtr.moby.org
+# DOCKER_REGISTRY_IMAGE: Image reference ex. applicationA
+#
+# ==================================================================
 
 trigger:
   branches:
