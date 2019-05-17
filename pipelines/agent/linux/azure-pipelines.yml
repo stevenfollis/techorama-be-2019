@@ -5,7 +5,7 @@
 # DOCKER_REGISTRY_USERNAME: Username for registry login
 # DOCKER_REGISTRY_TOKEN: Token/password used to log into registry
 # DOCKER_REGISTRY_FQDN: Base reference for Registry ex. dtr.moby.org
-# DOCKER_REGISTRY_IMAGE: Image reference ex. applicationA
+# DOCKER_REGISTRY_IMAGE: Image reference ex. dtr.moby.org/org/applicationA
 #
 # ==================================================================
 
