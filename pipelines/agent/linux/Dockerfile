@@ -77,7 +77,7 @@ RUN mkdir --parents ~/.docker/cli-plugins
 COPY --from=dockercli docker/docker /usr/local/bin/docker
 COPY --from=kubectl ./kubectl /usr/local/bin/kubectl
 COPY --from=helm /linux-amd64/helm /usr/local/bin/helm
-COPY --from=docker-app /tmp/docker-app-linux /usr/local/bin/docker-app
+# COPY --from=docker-app /tmp/docker-app-linux /usr/local/bin/docker-app
 
 CMD ["./start.sh"]
 
