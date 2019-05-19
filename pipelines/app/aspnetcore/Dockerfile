@@ -1,5 +1,5 @@
-ARG BASE_IMAGE_BUILD=mcr.microsoft.com/dotnet/core/sdk:2.1
-ARG BASE_IMAGE_RUNTIME=mcr.microsoft.com/dotnet/core/aspnet:2.1
+ARG BASE_IMAGE_BUILD=dtr.west.us.se.dckr.org/official/dotnet-core-sdk:2.1
+ARG BASE_IMAGE_RUNTIME=dtr.west.us.se.dckr.org/official/dotnet-core-aspnet:2.1
 
 #=======================================================
 # Stage 1: Use the larger SDK image to compile .NET code
