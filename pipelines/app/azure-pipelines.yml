@@ -39,9 +39,8 @@ steps:
   displayName: 'Login to Docker Trusted Registry'
 
 - script: |
-    docker pull \
-      $(DOCKER_BASE_IMAGE_BUILD) \
-      $(DOCKER_BASE_IMAGE_RUNTIME)
+    docker pull $(DOCKER_BASE_IMAGE_BUILD)
+    docker pull $(DOCKER_BASE_IMAGE_RUNTIME)
   displayName: 'Pre-Pull Docker Images'
   
 - script: |
