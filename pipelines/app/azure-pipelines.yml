@@ -32,6 +32,18 @@ steps:
   displayName: 'Get Docker Version'
 
 - script: |
+    # Login to the Docker Trusted Registry
+    docker login $(DOCKER_REGISTRY_FQDN) \
+      --username $(DOCKER_REGISTRY_USERNAME) \
+      --password $(DOCKER_REGISTRY_TOKEN)
+  displayName: 'Login to Docker Trusted Registry'
+
+- script: |
+    docker pull $(DOCKER_BASE_IMAGE_BUILD)
+    docker pull $(DOCKER_BASE_IMAGE_RUNTIME)
+  displayName: 'Pre-Pull Docker Images'
+  
+- script: |
     # Build Docker Image by passing in build time arguments
     # Tags image based on the short git commit ID
     docker build \
@@ -40,13 +52,6 @@ steps:
       --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" \
       ./pipelines/app/aspnetcore
   displayName: 'Build Docker Image'
-
-- script: |
-    # Login to the Docker Trusted Registry
-    docker login $(DOCKER_REGISTRY_FQDN) \
-      --username $(DOCKER_REGISTRY_USERNAME) \
-      --password $(DOCKER_REGISTRY_TOKEN)
-  displayName: 'Login to Docker Trusted Registry'
 
 - task: DownloadSecureFile@1
   inputs:
