@@ -37,6 +37,12 @@ steps:
       --username $(DOCKER_REGISTRY_USERNAME) \
       --password $(DOCKER_REGISTRY_TOKEN)
   displayName: 'Login to Docker Trusted Registry'
+
+- script: |
+    docker pull \
+      $(DOCKER_BASE_IMAGE_BUILD) \
+      $(DOCKER_BASE_IMAGE_RUNTIME)
+  displayName: 'Pre-Pull Docker Images'
   
 - script: |
     # Build Docker Image by passing in build time arguments
