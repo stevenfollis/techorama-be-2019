@@ -1,0 +1,93 @@
+# ==================================================================
+# Environment variables utilized in this Pipeline:
+#
+# DOCKER_BUILDKIT: Set to 1 to use new BuildKit capabilities
+# DOCKER_REGISTRY_USERNAME: Username for registry login
+# DOCKER_REGISTRY_TOKEN: Token/password used to log into registry
+# DOCKER_REGISTRY_FQDN: Base reference for Registry ex. dtr.moby.org
+# DOCKER_REGISTRY_IMAGE: Image reference ex. dtr.moby.org/moby/applicationA
+# DOCKER_BASE_IMAGE_BUILD: Stage 1/Build base image ex. mcr.microsoft.com/dotnet/core/sdk:2.1
+# DOCKER_BASE_IMAGE_RUNTIME: Stage 2/Runtime base image ex. mcr.microsoft.com/dotnet/core/aspnet:2.1
+# DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: Docker Content Trust variable
+# DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: Docker Content Trust variable
+# 
+# ==================================================================
+
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - pipelines/app/*
+
+pool:
+  # vmImage: 'ubuntu-latest'
+  name: 'Shared SE - Linux'
+
+steps:
+- script: |
+    echo "Getting Docker Version"
+    docker version
+  displayName: 'Get Docker Version'
+
+- script: |
+    # Login to the Docker Trusted Registry
+    docker login $(DOCKER_REGISTRY_FQDN) \
+      --username $(DOCKER_REGISTRY_USERNAME) \
+      --password $(DOCKER_REGISTRY_TOKEN)
+  displayName: 'Login to Docker Trusted Registry'
+
+- script: |
+    docker pull $(DOCKER_BASE_IMAGE_BUILD)
+    docker pull $(DOCKER_BASE_IMAGE_RUNTIME)
+  displayName: 'Pre-Pull Docker Images'
+  
+- script: |
+    # Build Docker Image by passing in build time arguments
+    # Tags image based on the short git commit ID
+    docker build \
+      --build-arg BASE_IMAGE_BUILD=$(DOCKER_BASE_IMAGE_BUILD) \
+      --build-arg BASE_IMAGE_RUNTIME=$(DOCKER_BASE_IMAGE_RUNTIME) \
+      --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" \
+      ./pipelines/app/aspnetcore
+  displayName: 'Build Docker Image'
+
+- task: DownloadSecureFile@1
+  inputs:
+    secureFile: 'ucp-bundle-azure-devops.zip'
+
+- script: |
+    # Unzip Docker Client Bundle from UCP
+    unzip \
+      -d $(Agent.TempDirectory)/bundle \
+      $(Agent.TempDirectory)/ucp-bundle-azure-devops.zip
+    
+    # Load private key for use with Docker Content Trust (DCT)
+    docker trust key load $(Agent.TempDirectory)/bundle/key.pem
+  displayName: 'Setup Docker Client Bundle'
+
+- script: |
+    # Push image to Docker Trusted Registry and sign with DCT
+    # Makes use of environment variables
+    DOCKER_CONTENT_TRUST=1 \
+    docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+  displayName: 'Push Docker Image'
+
+- script: |
+    # Connect Helm to cluster via Docker Client Bundle
+    cd $(Agent.TempDirectory)/bundle
+    eval "$(<env.sh)"
+
+    # Update deployment with Helm
+    cd $(Build.SourcesDirectory)
+    helm upgrade \
+      web \
+      ./pipelines/helm/techorama \
+      --set "image.tag=$(git rev-parse --short HEAD)" \
+      --tiller-namespace se-stevenfollis
+  displayName: 'Update application with Helm'
+
+- script: |
+    docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+  displayName: 'Tidy Up'
