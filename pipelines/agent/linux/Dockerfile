@@ -32,7 +32,7 @@ RUN wget --output helm.tar.gz https://storage.googleapis.com/kubernetes-helm/hel
     chmod +x linux-amd64/helm
 
 #=========================================================
-# Stage 3: Setup Azure Pipelines remote agent 
+# Stage 4: Setup Azure Pipelines remote agent 
 # Documented at https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/docker?view=azure-devops#linux
 #=========================================================
 FROM ubuntu:16.04
