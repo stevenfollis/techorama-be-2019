@@ -1,0 +1,24 @@
+version: "3.3"
+
+services:
+  
+  web:
+    credential_spec:
+      file: jobs-gmsa-cred-spec.json
+    deploy:
+      labels:
+        com.docker.lb.hosts: jobs.USER.swarm.west.us.se.dckr.org
+        com.docker.lb.network: USER-ingress
+        com.docker.lb.port: 8080
+      placement:
+        constraints:
+          - node.labels.ws-version==2019
+      restart_policy:
+        condition: any
+    image: IMAGE
+    networks:
+      - USER-ingress
+     
+networks:
+  USER-ingress:
+    external: true
