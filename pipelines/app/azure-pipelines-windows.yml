@@ -23,7 +23,7 @@ trigger:
 
 pool:
   # vmImage: 'ubuntu-latest'
-  name: 'Shared SE - Linux'
+  name: 'Shared SE - Windows'
 
 steps:
 - script: |
@@ -37,56 +37,17 @@ steps:
       --username $(DOCKER_REGISTRY_USERNAME) \
       --password $(DOCKER_REGISTRY_TOKEN)
   displayName: 'Login to Docker Trusted Registry'
+  enabled: "false"
 
 - script: |
-    docker pull $(DOCKER_BASE_IMAGE_BUILD)
-    docker pull $(DOCKER_BASE_IMAGE_RUNTIME)
-  displayName: 'Pre-Pull Docker Images'
-  
-- script: |
-    # Build Docker Image by passing in build time arguments
-    # Tags image based on the short git commit ID
-    docker build \
-      --build-arg BASE_IMAGE_BUILD=$(DOCKER_BASE_IMAGE_BUILD) \
-      --build-arg BASE_IMAGE_RUNTIME=$(DOCKER_BASE_IMAGE_RUNTIME) \
-      --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" \
-      ./pipelines/app/aspnetcore
+    docker build `
+      --tag $(DOCKER_REGISTRY_IMAGE):1 `
+      .\pipelines\app\aspnetcore
   displayName: 'Build Docker Image'
 
-- task: DownloadSecureFile@1
-  inputs:
-    secureFile: 'ucp-bundle-azure-devops.zip'
-
 - script: |
-    # Unzip Docker Client Bundle from UCP
-    unzip \
-      -d $(Agent.TempDirectory)/bundle \
-      $(Agent.TempDirectory)/ucp-bundle-azure-devops.zip
-    
-    # Load private key for use with Docker Content Trust (DCT)
-    docker trust key load $(Agent.TempDirectory)/bundle/key.pem
-  displayName: 'Setup Docker Client Bundle'
-
-- script: |
-    # Push image to Docker Trusted Registry and sign with DCT
-    # Makes use of environment variables
-    DOCKER_CONTENT_TRUST=1 \
-    docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+    docker push $(DOCKER_REGISTRY_IMAGE):1
   displayName: 'Push Docker Image'
-
-- script: |
-    # Connect Helm to cluster via Docker Client Bundle
-    cd $(Agent.TempDirectory)/bundle
-    eval "$(<env.sh)"
-
-    # Update deployment with Helm
-    cd $(Build.SourcesDirectory)
-    helm upgrade \
-      web \
-      ./pipelines/helm/techorama \
-      --set "image.tag=$(git rev-parse --short HEAD)" \
-      --tiller-namespace se-stevenfollis
-  displayName: 'Update application with Helm'
 
 - script: |
     docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
