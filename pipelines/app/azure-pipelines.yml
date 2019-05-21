@@ -87,5 +87,9 @@ steps:
   displayName: 'Update application with Helm'
 
 - script: |
+    # Remove built image
     docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+
+    # Logout of Docker Trusted registry
+    docker logout
   displayName: 'Tidy Up'
