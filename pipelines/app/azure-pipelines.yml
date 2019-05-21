@@ -27,12 +27,10 @@ pool:
 
 steps:
 - script: |
-    echo "Getting Docker Version"
     docker version
   displayName: 'Get Docker Version'
 
 - script: |
-    # Login to the Docker Trusted Registry
     docker login $(DOCKER_REGISTRY_FQDN) \
       --username $(DOCKER_REGISTRY_USERNAME) \
       --password $(DOCKER_REGISTRY_TOKEN)
