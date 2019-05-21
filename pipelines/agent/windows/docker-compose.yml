@@ -4,9 +4,11 @@ services:
     deploy:
       replicas: 3
     environment:
-      AZP_URL: 'https://dev.azure.com/stevenfollis' 
-      AZP_TOKEN: 'huhdzyelevk7xody2p3lbwtgm5eg73aqckp4e7dcknekyboq4vsa' 
-      AZP_POOL: 'Shared SE - Windows'
-    image: dtr.west.us.se.dckr.org/se-stevenfollis/dockeragent-windows:1
+      AZP_URL: '' 
+      AZP_TOKEN: '' 
+      AZP_POOL: ''
+    image: dtr.moby.com/se-stevenfollis/dockeragent:1
     volumes:
-      - \\.\pipe\docker_engine:\\.\pipe\docker_engine
+      - type: npipe
+        source: \\.\pipe\docker_engine
+        target: \\.\pipe\docker_engine
