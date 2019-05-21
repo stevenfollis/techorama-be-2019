@@ -1,5 +1,5 @@
 #=========================================================
-# Stage 1: Download Docker CLI
+# Stage 1: Download Docker CLI binary
 #=========================================================
 FROM alpine:latest AS dockercli
 
@@ -59,7 +59,7 @@ WORKDIR /azp
 COPY ./start.sh .
 RUN chmod +x start.sh
 
-# User is required for the Docker Sock
+# User is required for the Docker Socket
 USER root 
 
 # Copy binaries from earlier build stages
