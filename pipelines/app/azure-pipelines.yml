@@ -80,20 +80,6 @@ stages:
       displayName: 'Push Docker Image'
 
     - script: |
-        # Connect Helm to cluster via Docker Client Bundle
-        cd $(Agent.TempDirectory)/bundle
-        eval "$(<env.sh)"
-
-        # Update deployment with Helm
-        cd $(Build.SourcesDirectory)
-        helm upgrade \
-          web \
-          ./pipelines/helm/techorama \
-          --set "image.tag=$(git rev-parse --short HEAD)" \
-          --tiller-namespace se-stevenfollis
-      displayName: 'Update application with Helm'
-
-    - script: |
         # Remove built image
         docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
 
@@ -176,7 +162,7 @@ stages:
           --purge
       displayName: 'Push Manifest List'
 
-- stage: deploy
+- stage: Deploy
   jobs:
   - job: helm
     displayName: 'Deploy Container with Helm'
@@ -192,13 +178,13 @@ stages:
         unzip \
           -d $(Agent.TempDirectory)/bundle \
           $(Agent.TempDirectory)/ucp-bundle-azure-devops.zip
-      displayName: 'Setup Docker Client Bundle'
-
-    - script: |
+        
         # Connect Helm to cluster via Docker Client Bundle
         cd $(Agent.TempDirectory)/bundle
         eval "$(<env.sh)"
+      displayName: 'Setup Docker Client Bundle'
 
+    - script: |
         # Update deployment with Helm
         cd $(Build.SourcesDirectory)
         helm upgrade \
