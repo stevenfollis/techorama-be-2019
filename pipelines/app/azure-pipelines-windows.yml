@@ -38,7 +38,7 @@ steps:
 
 - powershell: |
     # Login to the Docker Trusted Registry
-    $(DOCKER_REGISTRY_TOKEN) | docker login $(DOCKER_REGISTRY_FQDN) --username $(DOCKER_REGISTRY_USERNAME) --password-stdin
+    Write-Output $(DOCKER_REGISTRY_TOKEN) | docker login $(DOCKER_REGISTRY_FQDN) --username $(DOCKER_REGISTRY_USERNAME) --password-stdin
   displayName: 'Login to Docker Trusted Registry'
 
 - powershell: |
