@@ -13,6 +13,9 @@
 # 
 # ==================================================================
 
+variables:
+  DOCKER_CLI_EXPERIMENTAL: "enabled"
+
 trigger:
   branches:
     include:
@@ -27,12 +30,12 @@ pool:
 
 steps:
 - powershell: |
-    echo "Getting User"
+    Write-Host "Getting User"
     whoami
   displayName: 'Get User'
 
 - powershell: |
-    echo "Getting Docker Version"
+    Write-Host "Getting Docker Version"
     docker version
   displayName: 'Get Docker Version'
 
@@ -57,4 +60,8 @@ steps:
 
 - powershell: |
     docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+  displayName: 'Tidy Up'
+
+- powershell: |
+    docker
   displayName: 'Tidy Up'
