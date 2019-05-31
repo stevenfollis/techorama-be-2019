@@ -163,6 +163,8 @@ stages:
       displayName: 'Push Manifest List'
 
 - stage: Deploy
+  dependsOn:
+  - Build
   jobs:
   - job: helm
     displayName: 'Deploy Container with Helm'
@@ -178,13 +180,13 @@ stages:
         unzip \
           -d $(Agent.TempDirectory)/bundle \
           $(Agent.TempDirectory)/ucp-bundle-azure-devops.zip
-        
-        # Connect Helm to cluster via Docker Client Bundle
-        cd $(Agent.TempDirectory)/bundle
-        eval "$(<env.sh)"
       displayName: 'Setup Docker Client Bundle'
 
     - script: |
+        # Connect Helm to cluster via Docker Client Bundle
+        cd $(Agent.TempDirectory)/bundle
+        eval "$(<env.sh)"
+
         # Update deployment with Helm
         cd $(Build.SourcesDirectory)
         helm upgrade \
