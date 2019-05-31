@@ -27,6 +27,7 @@ jobs:
   pool:
     name: 'Shared SE - Linux'
   steps:
+
   - script: |
       docker version
     displayName: 'Get Docker Version'
@@ -99,7 +100,10 @@ jobs:
   displayName: 'Build Windows Container'
   pool:
     name: 'Shared SE - Windows'
+  variables:
+    DOCKER_BUILDKIT: 1
   steps:
+
   - powershell: |
       Write-Host "Getting User";
       whoami;
