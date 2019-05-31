@@ -30,20 +30,20 @@ pool:
 
 steps:
 - powershell: |
-    Write-Host "Getting User"
-    whoami
+    Write-Host "Getting User";
+    whoami;
   displayName: 'Get User'
 
 - powershell: |
     Write-Host "Getting Docker Version"
-    docker version
+    docker version;
   displayName: 'Get Docker Version'
 
 - powershell: |
     # Login to the Docker Trusted Registry
     docker login $(DOCKER_REGISTRY_FQDN) `
       --username $(DOCKER_REGISTRY_USERNAME) `
-      --password $(DOCKER_REGISTRY_TOKEN)
+      --password $(DOCKER_REGISTRY_TOKEN);
   displayName: 'Login to Docker Trusted Registry'
   errorActionPreference: silentlyContinue
 
@@ -51,15 +51,15 @@ steps:
     docker build `
       --file .\pipelines\app\aspnetcore\Dockerfile.nanoserver-sac1809 `
       --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" `
-      .\pipelines\app\aspnetcore
+      .\pipelines\app\aspnetcore;
   displayName: 'Build Docker Image'
 
 - powershell: |
-    docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+    docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)";
   displayName: 'Push Docker Image'
 
 - powershell: |
-    docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+    docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)";
   displayName: 'Tidy Up'
 
 - powershell: |
