@@ -20,15 +20,18 @@ trigger:
   paths:
     include:
     - pipelines/app/*
+
 stages:
-- stage: a
+- stage: build
   jobs:
-  - job: a
+  - job: build_linux
     displayName: 'Build Linux Container'
     pool:
       name: 'Shared SE - Linux'
     variables:
       DOCKER_REGISTRY_IMAGE: dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019
+      DOCKER_BASE_IMAGE_BUILD: dtr.west.us.se.dckr.org/official/dotnet-core-sdk:2.1
+      DOCKER_BASE_IMAGE_RUNTIME: dtr.west.us.se.dckr.org/official/dotnet-core-aspnet:2.1
     steps:
     - script: |
         docker version
@@ -98,7 +101,7 @@ stages:
         docker logout
       displayName: 'Tidy Up'
 
-  - job: b
+  - job: build_windows
     displayName: 'Build Windows Container'
     pool:
       name: 'Shared SE - Windows'
@@ -139,14 +142,10 @@ stages:
         docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)";
       displayName: 'Tidy Up'
 
-    - powershell: |
-        docker manifest --help
-      displayName: 'Tidy Up'
-
-  - job: c
+  - job: build_multi_arch
     dependsOn:
-    - a
-    - b
+    - build_linux
+    - build_windows
     displayName: 'Build Multi-Architecture Manifest List'
     pool:
       name: 'Shared SE - Linux'
@@ -176,3 +175,35 @@ stages:
           dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-multiarch:"$(git rev-parse --short HEAD)" \
           --purge
       displayName: 'Push Manifest List'
+
+- stage: deploy
+  jobs:
+  - job: helm
+    displayName: 'Deploy Container with Helm'
+    pool:
+      name: 'Shared SE - Linux'
+    steps:
+    - task: DownloadSecureFile@1
+      inputs:
+        secureFile: 'ucp-bundle-azure-devops.zip'
+
+    - script: |
+        # Unzip Docker Client Bundle from UCP
+        unzip \
+          -d $(Agent.TempDirectory)/bundle \
+          $(Agent.TempDirectory)/ucp-bundle-azure-devops.zip
+      displayName: 'Setup Docker Client Bundle'
+
+    - script: |
+        # Connect Helm to cluster via Docker Client Bundle
+        cd $(Agent.TempDirectory)/bundle
+        eval "$(<env.sh)"
+
+        # Update deployment with Helm
+        cd $(Build.SourcesDirectory)
+        helm upgrade \
+          web \
+          ./pipelines/helm/techorama \
+          --set "image.tag=$(git rev-parse --short HEAD)" \
+          --tiller-namespace se-stevenfollis
+      displayName: 'Update application with Helm'
