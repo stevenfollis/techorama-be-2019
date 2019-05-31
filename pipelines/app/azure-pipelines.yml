@@ -20,158 +20,159 @@ trigger:
   paths:
     include:
     - pipelines/app/*
+stages:
+- stage: a
+  jobs:
+  - job: a
+    displayName: 'Build Linux Container'
+    pool:
+      name: 'Shared SE - Linux'
+    variables:
+      DOCKER_REGISTRY_IMAGE: dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019
+    steps:
+    - script: |
+        docker version
+      displayName: 'Get Docker Version'
 
-jobs:
-- job: a
-  displayName: 'Build Linux Container'
-  pool:
-    name: 'Shared SE - Linux'
-  variables:
-    DOCKER_REGISTRY_IMAGE: dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019
-  steps:
-  - script: |
-      docker version
-    displayName: 'Get Docker Version'
+    - script: |
+        docker login $(DOCKER_REGISTRY_FQDN) \
+          --username $(DOCKER_REGISTRY_USERNAME) \
+          --password $(DOCKER_REGISTRY_TOKEN)
+      displayName: 'Login to Docker Trusted Registry'
 
-  - script: |
-      docker login $(DOCKER_REGISTRY_FQDN) \
-        --username $(DOCKER_REGISTRY_USERNAME) \
-        --password $(DOCKER_REGISTRY_TOKEN)
-    displayName: 'Login to Docker Trusted Registry'
-
-  - script: |
-      docker pull $(DOCKER_BASE_IMAGE_BUILD)
-      docker pull $(DOCKER_BASE_IMAGE_RUNTIME)
-    displayName: 'Pre-Pull Docker Images'
-    
-  - script: |
-      # Build Docker Image by passing in build time arguments
-      # Tags image based on the short git commit ID
-      docker build \
-        --build-arg BASE_IMAGE_BUILD=$(DOCKER_BASE_IMAGE_BUILD) \
-        --build-arg BASE_IMAGE_RUNTIME=$(DOCKER_BASE_IMAGE_RUNTIME) \
-        --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" \
-        ./pipelines/app/aspnetcore
-    displayName: 'Build Docker Image'
-
-  - task: DownloadSecureFile@1
-    inputs:
-      secureFile: 'ucp-bundle-azure-devops.zip'
-
-  - script: |
-      # Unzip Docker Client Bundle from UCP
-      unzip \
-        -d $(Agent.TempDirectory)/bundle \
-        $(Agent.TempDirectory)/ucp-bundle-azure-devops.zip
+    - script: |
+        docker pull $(DOCKER_BASE_IMAGE_BUILD)
+        docker pull $(DOCKER_BASE_IMAGE_RUNTIME)
+      displayName: 'Pre-Pull Docker Images'
       
-      # Load key for use with Docker Content Trust (DCT)
-      docker trust key load $(Agent.TempDirectory)/bundle/key.pem
-    displayName: 'Setup Docker Client Bundle'
+    - script: |
+        # Build Docker Image by passing in build time arguments
+        # Tags image based on the short git commit ID
+        docker build \
+          --build-arg BASE_IMAGE_BUILD=$(DOCKER_BASE_IMAGE_BUILD) \
+          --build-arg BASE_IMAGE_RUNTIME=$(DOCKER_BASE_IMAGE_RUNTIME) \
+          --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" \
+          ./pipelines/app/aspnetcore
+      displayName: 'Build Docker Image'
 
-  - script: |
-      # Push image to Docker Trusted Registry and sign with DCT
-      # Makes use of environment variables
-      DOCKER_CONTENT_TRUST=1 \
-      docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
-    displayName: 'Push Docker Image'
+    - task: DownloadSecureFile@1
+      inputs:
+        secureFile: 'ucp-bundle-azure-devops.zip'
 
-  - script: |
-      # Connect Helm to cluster via Docker Client Bundle
-      cd $(Agent.TempDirectory)/bundle
-      eval "$(<env.sh)"
+    - script: |
+        # Unzip Docker Client Bundle from UCP
+        unzip \
+          -d $(Agent.TempDirectory)/bundle \
+          $(Agent.TempDirectory)/ucp-bundle-azure-devops.zip
+        
+        # Load key for use with Docker Content Trust (DCT)
+        docker trust key load $(Agent.TempDirectory)/bundle/key.pem
+      displayName: 'Setup Docker Client Bundle'
 
-      # Update deployment with Helm
-      cd $(Build.SourcesDirectory)
-      helm upgrade \
-        web \
-        ./pipelines/helm/techorama \
-        --set "image.tag=$(git rev-parse --short HEAD)" \
-        --tiller-namespace se-stevenfollis
-    displayName: 'Update application with Helm'
+    - script: |
+        # Push image to Docker Trusted Registry and sign with DCT
+        # Makes use of environment variables
+        DOCKER_CONTENT_TRUST=1 \
+        docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+      displayName: 'Push Docker Image'
 
-  - script: |
-      # Remove built image
-      docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+    - script: |
+        # Connect Helm to cluster via Docker Client Bundle
+        cd $(Agent.TempDirectory)/bundle
+        eval "$(<env.sh)"
 
-      # Logout of Docker Trusted registry
-      docker logout
-    displayName: 'Tidy Up'
+        # Update deployment with Helm
+        cd $(Build.SourcesDirectory)
+        helm upgrade \
+          web \
+          ./pipelines/helm/techorama \
+          --set "image.tag=$(git rev-parse --short HEAD)" \
+          --tiller-namespace se-stevenfollis
+      displayName: 'Update application with Helm'
 
-- job: b
-  displayName: 'Build Windows Container'
-  pool:
-    name: 'Shared SE - Windows'
-  variables:
-    DOCKER_BUILDKIT: 0
-    DOCKER_REGISTRY_IMAGE: dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-windows
-  steps:
-  - powershell: |
-      Write-Host "Getting User";
-      whoami;
-    displayName: 'Get User'
+    - script: |
+        # Remove built image
+        docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
 
-  - powershell: |
-      Write-Host "Getting Docker Version"
-      docker version;
-    displayName: 'Get Docker Version'
+        # Logout of Docker Trusted registry
+        docker logout
+      displayName: 'Tidy Up'
 
-  - powershell: |
-      # Login to the Docker Trusted Registry
-      docker login $(DOCKER_REGISTRY_FQDN) `
-        --username $(DOCKER_REGISTRY_USERNAME) `
-        --password $(DOCKER_REGISTRY_TOKEN);
-    displayName: 'Login to Docker Trusted Registry'
-    errorActionPreference: silentlyContinue
+  - job: b
+    displayName: 'Build Windows Container'
+    pool:
+      name: 'Shared SE - Windows'
+    variables:
+      DOCKER_BUILDKIT: 0
+      DOCKER_REGISTRY_IMAGE: dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-windows
+    steps:
+    - powershell: |
+        Write-Host "Getting User";
+        whoami;
+      displayName: 'Get User'
 
-  - powershell: |
-      docker build `
-        --file .\pipelines\app\aspnetcore\Dockerfile.nanoserver-sac1809 `
-        --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" `
-        .\pipelines\app\aspnetcore;
-    displayName: 'Build Docker Image'
+    - powershell: |
+        Write-Host "Getting Docker Version"
+        docker version;
+      displayName: 'Get Docker Version'
 
-  - powershell: |
-      docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)";
-    displayName: 'Push Docker Image'
+    - powershell: |
+        # Login to the Docker Trusted Registry
+        docker login $(DOCKER_REGISTRY_FQDN) `
+          --username $(DOCKER_REGISTRY_USERNAME) `
+          --password $(DOCKER_REGISTRY_TOKEN);
+      displayName: 'Login to Docker Trusted Registry'
+      errorActionPreference: silentlyContinue
 
-  - powershell: |
-      docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)";
-    displayName: 'Tidy Up'
+    - powershell: |
+        docker build `
+          --file .\pipelines\app\aspnetcore\Dockerfile.nanoserver-sac1809 `
+          --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" `
+          .\pipelines\app\aspnetcore;
+      displayName: 'Build Docker Image'
 
-  - powershell: |
-      docker manifest --help
-    displayName: 'Tidy Up'
+    - powershell: |
+        docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)";
+      displayName: 'Push Docker Image'
 
-- job: c
-  dependsOn:
-  - a
-  - b
-  displayName: 'Build Multi-Architecture Manifest List'
-  pool:
-    name: 'Shared SE - Linux'
-  variables:
-    DOCKER_BUILDKIT: 1
-    DOCKER_CLI_EXPERIMENTAL: "enabled"
-  steps:
-  - script: |
-      docker version
-    displayName: 'Get Docker Version'
+    - powershell: |
+        docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)";
+      displayName: 'Tidy Up'
 
-  - script: |
-      docker login $(DOCKER_REGISTRY_FQDN) \
-        --username $(DOCKER_REGISTRY_USERNAME) \
-        --password $(DOCKER_REGISTRY_TOKEN)
-    displayName: 'Login to Docker Trusted Registry'
-  
-  - script: |
-      docker manifest create \
-        dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-multiarch:"$(git rev-parse --short HEAD)" \
-        dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019:"$(git rev-parse --short HEAD)" \
-        dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-windows:"$(git rev-parse --short HEAD)"
-    displayName: 'Create Manifest List'
+    - powershell: |
+        docker manifest --help
+      displayName: 'Tidy Up'
 
-  - script: |
-      docker manifest push \
-        dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-multiarch:"$(git rev-parse --short HEAD)" \
-        --purge
-    displayName: 'Push Manifest List'
+  - job: c
+    dependsOn:
+    - a
+    - b
+    displayName: 'Build Multi-Architecture Manifest List'
+    pool:
+      name: 'Shared SE - Linux'
+    variables:
+      DOCKER_BUILDKIT: 1
+      DOCKER_CLI_EXPERIMENTAL: "enabled"
+    steps:
+    - script: |
+        docker version
+      displayName: 'Get Docker Version'
+
+    - script: |
+        docker login $(DOCKER_REGISTRY_FQDN) \
+          --username $(DOCKER_REGISTRY_USERNAME) \
+          --password $(DOCKER_REGISTRY_TOKEN)
+      displayName: 'Login to Docker Trusted Registry'
+    
+    - script: |
+        docker manifest create \
+          dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-multiarch:"$(git rev-parse --short HEAD)" \
+          dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019:"$(git rev-parse --short HEAD)" \
+          dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-windows:"$(git rev-parse --short HEAD)"
+      displayName: 'Create Manifest List'
+
+    - script: |
+        docker manifest push \
+          dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-multiarch:"$(git rev-parse --short HEAD)" \
+          --purge
+      displayName: 'Push Manifest List'
