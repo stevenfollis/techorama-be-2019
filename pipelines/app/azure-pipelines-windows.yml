@@ -63,5 +63,5 @@ steps:
   displayName: 'Tidy Up'
 
 - powershell: |
-    docker
+    docker manifest --help
   displayName: 'Tidy Up'
