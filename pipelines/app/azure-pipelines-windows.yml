@@ -26,34 +26,33 @@ pool:
   name: 'Shared SE - Windows'
 
 steps:
-- script: |
+- powershell: |
     echo "Getting User"
     whoami
   displayName: 'Get User'
 
-- script: |
+- powershell: |
     echo "Getting Docker Version"
     docker version
   displayName: 'Get Docker Version'
 
-- script: |
+- powershell: |
     # Login to the Docker Trusted Registry
-    docker login $(DOCKER_REGISTRY_FQDN) \
-      --username $(DOCKER_REGISTRY_USERNAME) \
+    powershell docker login $(DOCKER_REGISTRY_FQDN) `
+      --username $(DOCKER_REGISTRY_USERNAME) `
       --password $(DOCKER_REGISTRY_TOKEN)
   displayName: 'Login to Docker Trusted Registry'
-  enabled: "false"
 
-- script: |
+- powershell: |
     docker build `
       --tag $(DOCKER_REGISTRY_IMAGE):1 `
       .\pipelines\app\aspnetcore
   displayName: 'Build Docker Image'
 
-- script: |
+- powershell: |
     docker push $(DOCKER_REGISTRY_IMAGE):1
   displayName: 'Push Docker Image'
 
-- script: |
+- powershell: |
     docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
   displayName: 'Tidy Up'
