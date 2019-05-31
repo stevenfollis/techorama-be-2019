@@ -42,11 +42,11 @@ steps:
       --username $(DOCKER_REGISTRY_USERNAME) `
       --password $(DOCKER_REGISTRY_TOKEN)
   displayName: 'Login to Docker Trusted Registry'
-  errorActionPreference: continue
+  errorActionPreference: silentlyContinue
 
 - powershell: |
     docker build `
-      --file .\Dockerfile.nanoserver-sac1809 `
+      --file .\pipelines\app\aspnetcore\Dockerfile.nanoserver-sac1809 `
       --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" `
       .\pipelines\app\aspnetcore
   displayName: 'Build Docker Image'
