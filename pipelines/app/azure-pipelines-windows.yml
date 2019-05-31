@@ -27,6 +27,11 @@ pool:
 
 steps:
 - script: |
+    echo "Getting User"
+    whoami
+  displayName: 'Get User'
+
+- script: |
     echo "Getting Docker Version"
     docker version
   displayName: 'Get Docker Version'
