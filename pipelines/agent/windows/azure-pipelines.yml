@@ -1,0 +1,48 @@
+# ==================================================================
+# Environment variables utilized in this Pipeline:
+#
+# DOCKER_BUILDKIT: Set to 1 to use new BuildKit capabilities
+# DOCKER_REGISTRY_USERNAME: Username for registry login
+# DOCKER_REGISTRY_TOKEN: Token/password used to log into registry
+# DOCKER_REGISTRY_FQDN: Base reference for Registry ex. dtr.moby.org
+# DOCKER_REGISTRY_IMAGE: Image reference ex. dtr.moby.org/org/applicationA
+#
+# ==================================================================
+
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - pipelines/agent/linux/*
+
+pool:
+  # vmImage: 'ubuntu-latest'
+  name: 'Shared SE - Linux'
+
+steps:
+- script: |
+    echo "Getting Docker Version"
+    docker version
+  displayName: 'Get Docker Version'
+
+- script: |
+    # Build Docker Image by passing in build time arguments
+    # Tags image based on the short git commit ID
+    docker build \
+      --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" \
+      ./pipelines/agent/linux
+  displayName: 'Build Docker Image'
+
+- script: |
+    # Login to the Docker Trusted Registry
+    docker login $(DOCKER_REGISTRY_FQDN) \
+      --username $(DOCKER_REGISTRY_USERNAME) \
+      --password $(DOCKER_REGISTRY_TOKEN)
+  displayName: 'Login to Docker Trusted Registry'
+
+- script: |
+    # Push image to Docker Trusted Registry
+    docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)"
+  displayName: 'Push Docker Image'
