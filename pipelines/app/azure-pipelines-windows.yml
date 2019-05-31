@@ -38,11 +38,12 @@ steps:
 
 - powershell: |
     # Login to the Docker Trusted Registry
-    Write-Output docker login $(DOCKER_REGISTRY_FQDN) --username $(DOCKER_REGISTRY_USERNAME) --password $(DOCKER_REGISTRY_TOKEN)
+    echo docker login $(DOCKER_REGISTRY_FQDN) --username $(DOCKER_REGISTRY_USERNAME) --password $(DOCKER_REGISTRY_TOKEN)
   displayName: 'Login to Docker Trusted Registry'
 
 - powershell: |
     docker build `
+      --file .\pipelines\app\aspnetcore\Dockerfile.nanoserver-sac1809 `
       --tag $(DOCKER_REGISTRY_IMAGE):1 `
       .\pipelines\app\aspnetcore
   displayName: 'Build Docker Image'
