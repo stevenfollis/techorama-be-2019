@@ -23,6 +23,7 @@ trigger:
 
 stages:
 - stage: build
+  displayName: Build
   jobs:
   - job: build_linux
     displayName: 'Build Linux Container'
@@ -162,9 +163,10 @@ stages:
           --purge
       displayName: 'Push Manifest List'
 
-- stage: Deploy
+- stage: deploy
+  displayName: Deploy
   dependsOn:
-  - Build
+  - build
   jobs:
   - job: helm
     displayName: 'Deploy Container with Helm'
