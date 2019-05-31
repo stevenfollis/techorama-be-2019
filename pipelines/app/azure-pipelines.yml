@@ -142,6 +142,9 @@ jobs:
     displayName: 'Tidy Up'
 
 - job: c
+  dependsOn:
+  - a
+  - b
   displayName: 'Build Multi-Architecture Manifest List'
   pool:
     name: 'Shared SE - Linux'
