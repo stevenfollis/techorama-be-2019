@@ -26,8 +26,9 @@ jobs:
   displayName: 'Build Linux Container'
   pool:
     name: 'Shared SE - Linux'
+  variables:
+    DOCKER_REGISTRY_IMAGE: dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019
   steps:
-
   - script: |
       docker version
     displayName: 'Get Docker Version'
@@ -102,8 +103,8 @@ jobs:
     name: 'Shared SE - Windows'
   variables:
     DOCKER_BUILDKIT: 0
+    DOCKER_REGISTRY_IMAGE: dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-windows
   steps:
-
   - powershell: |
       Write-Host "Getting User";
       whoami;
@@ -152,7 +153,6 @@ jobs:
     DOCKER_BUILDKIT: 1
     DOCKER_CLI_EXPERIMENTAL: "enabled"
   steps:
-
   - script: |
       docker version
     displayName: 'Get Docker Version'
