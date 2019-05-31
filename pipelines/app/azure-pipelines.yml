@@ -23,6 +23,7 @@ trigger:
 
 jobs:
 - job: a
+  displayName: 'Build Linux Container'
   pool:
     name: 'Shared SE - Linux'
   steps:
@@ -92,4 +93,46 @@ jobs:
 
       # Logout of Docker Trusted registry
       docker logout
+    displayName: 'Tidy Up'
+
+- job: b
+  displayName: 'Build Windows Container'
+  pool:
+    name: 'Shared SE - Windows'
+  steps:
+  - powershell: |
+      Write-Host "Getting User";
+      whoami;
+    displayName: 'Get User'
+
+  - powershell: |
+      Write-Host "Getting Docker Version"
+      docker version;
+    displayName: 'Get Docker Version'
+
+  - powershell: |
+      # Login to the Docker Trusted Registry
+      docker login $(DOCKER_REGISTRY_FQDN) `
+        --username $(DOCKER_REGISTRY_USERNAME) `
+        --password $(DOCKER_REGISTRY_TOKEN);
+    displayName: 'Login to Docker Trusted Registry'
+    errorActionPreference: silentlyContinue
+
+  - powershell: |
+      docker build `
+        --file .\pipelines\app\aspnetcore\Dockerfile.nanoserver-sac1809 `
+        --tag $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)" `
+        .\pipelines\app\aspnetcore;
+    displayName: 'Build Docker Image'
+
+  - powershell: |
+      docker push $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)";
+    displayName: 'Push Docker Image'
+
+  - powershell: |
+      docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)";
+    displayName: 'Tidy Up'
+
+  - powershell: |
+      docker manifest --help
     displayName: 'Tidy Up'
