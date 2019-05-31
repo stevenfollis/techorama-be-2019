@@ -140,3 +140,35 @@ jobs:
   - powershell: |
       docker manifest --help
     displayName: 'Tidy Up'
+
+- job: c
+  displayName: 'Build Multi-Architecture Manifest List'
+  pool:
+    name: 'Shared SE - Linux'
+  variables:
+    DOCKER_BUILDKIT: 1
+    DOCKER_CLI_EXPERIMENTAL: "enabled"
+  steps:
+
+  - script: |
+      docker version
+    displayName: 'Get Docker Version'
+
+  - script: |
+      docker login $(DOCKER_REGISTRY_FQDN) \
+        --username $(DOCKER_REGISTRY_USERNAME) \
+        --password $(DOCKER_REGISTRY_TOKEN)
+    displayName: 'Login to Docker Trusted Registry'
+  
+  - script: |
+      docker manifest create \
+        dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-multiarch:"$(git rev-parse --short HEAD)" \
+        dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019:"$(git rev-parse --short HEAD)" \
+        dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-windows:"$(git rev-parse --short HEAD)"
+    displayName: 'Create Manifest List'
+
+  - script: |
+      docker manifest push \
+        dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-multiarch:"$(git rev-parse --short HEAD)" \
+        --purge
+    displayName: 'Push Manifest List'
