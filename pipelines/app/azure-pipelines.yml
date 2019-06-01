@@ -129,11 +129,11 @@ stages:
         docker image rm $(DOCKER_REGISTRY_IMAGE):"$(git rev-parse --short HEAD)";
       displayName: 'Tidy Up'
 
-  - job: build_multi_arch
+  - job: create_multi_arch
     dependsOn:
     - build_linux
     - build_windows
-    displayName: 'Build Multi-Architecture Manifest List'
+    displayName: 'Create Multi-Architecture Manifest List'
     pool:
       name: 'Shared SE - Linux'
     variables:
@@ -162,9 +162,13 @@ stages:
 
     - script: |
         docker manifest push \
-          dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-multiarch:"$(git rev-parse --short HEAD)" \
+          $(DOCKER_IMAGE_MULTI_ARCH):"$(git rev-parse --short HEAD)" \
           --purge
       displayName: 'Push Manifest List'
+
+    - script: |
+        docker manifest inspect $(DOCKER_IMAGE_MULTI_ARCH):"$(git rev-parse --short HEAD)"
+      displayName: 'Inspect Manifest List'
 
 - stage: deploy
   displayName: Deploy
