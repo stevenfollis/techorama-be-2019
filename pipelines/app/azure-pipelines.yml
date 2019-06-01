@@ -139,6 +139,9 @@ stages:
     variables:
       DOCKER_BUILDKIT: 1
       DOCKER_CLI_EXPERIMENTAL: "enabled"
+      DOCKER_IMAGE_MULTI_ARCH: 'dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-multiarch'
+      DOCKER_IMAGE_LINUX: 'dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019'
+      DOCKER_IMAGE_WINDOWS: 'dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-windows'
     steps:
     - script: |
         docker version
@@ -152,9 +155,9 @@ stages:
     
     - script: |
         docker manifest create \
-          dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-multiarch:"$(git rev-parse --short HEAD)" \
-          dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019:"$(git rev-parse --short HEAD)" \
-          dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-windows:"$(git rev-parse --short HEAD)"
+          $(DOCKER_IMAGE_MULTI_ARCH):"$(git rev-parse --short HEAD)" \
+          $(DOCKER_IMAGE_LINUX):"$(git rev-parse --short HEAD)" \
+          $(DOCKER_IMAGE_WINDOWS):"$(git rev-parse --short HEAD)"
       displayName: 'Create Manifest List'
 
     - script: |
