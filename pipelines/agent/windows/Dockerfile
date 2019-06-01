@@ -1,36 +1,82 @@
 # escape=`
-# FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-20190514-windowsservercore-ltsc2019
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+
+#=========================================================
+# Stage 1: Download Docker CLI binary
+#=========================================================
+FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS dockercli
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ENV AGENT_URL='https://vstsagentpackage.azureedge.net/agent/2.148.2/vsts-agent-win-x64-2.148.2.zip'
-ENV DOCKER_VERSION='18.09'
+RUN Invoke-WebRequest `
+      -OutFile docker.zip `
+      -Uri https://download.docker.com/components/engine/windows-server/18.09/docker-18.09.6.zip `
+      -UseBasicParsing; `
+    Expand-Archive `
+      -DestinationPath 'C:\' `
+      -Force `
+      -Path docker.zip;
+
+#=========================================================
+# Stage 2: Download Azure DevOps Pipelines Agent
+#=========================================================
+FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS adoagent
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+ENV ADO_AGENT_URL='https://vstsagentpackage.azureedge.net/agent/2.148.2/vsts-agent-win-x64-2.148.2.zip'
+
+RUN Invoke-WebRequest `
+      -OutFile C:\agent.zip `
+      -Uri $env:ADO_AGENT_URL `
+      -UseBasicParsing; `
+    Expand-Archive `
+      -Destination C:\agent `
+      -Force `
+      -Path agent.zip;
+
+#=========================================================
+# Stage 3: Download ServiceMonitor
+# https://github.com/microsoft/IIS.ServiceMonitor
+#=========================================================
+FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS servicemonitor
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+ENV SERVICE_MONITOR_VERSION='2.0.1.3'
+
+RUN Invoke-WebRequest `
+      -OutFile C:\ServiceMonitor.exe `
+      -Uri "https://dotnetbinaries.blob.core.windows.net/servicemonitor/$Env:SERVICE_MONITOR_VERSION/ServiceMonitor.exe" `
+      -UseBasicParsing;
+
+#=========================================================
+# Stage 4: Setup Azure Pipelines remote agent
+#=========================================================
+FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS runtime
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
 WORKDIR C:\agent
 
-# Setup Docker CLI
-RUN Invoke-WebRequest `
-      -UseBasicParsing `
-      -OutFile docker.zip `
-      -Uri https://download.docker.com/components/engine/windows-server/18.09/docker-18.09.6.zip; `
-    Expand-Archive docker.zip -DestinationPath $Env:ProgramFiles -Force; `
-    $env:Path = 'C:\ProgramFiles\docker;' + $env:PATH; `
-    Remove-Item docker.zip;
-
-# Setup general tools
+# Setup general tools via the Scoop package manager
 RUN Invoke-Expression (New-Object Net.WebClient).DownloadString('https://get.scoop.sh'); `
-  scoop install git;
+    scoop install git;
 
 # Setup Azure Pipelines Agent
-RUN Invoke-WebRequest `
-      -OutFile C:\agent\agent.zip `
-      -Uri $env:AGENT_URL `
-      -UseBasicParsing; `
-    Expand-Archive `
-      -Path agent.zip `
-      -Destination C:\agent; `
-    Remove-Item agent.zip;
+COPY --from=adoagent C:\agent C:\agent
+
+# Setup Docker CLI
+COPY --from=dockercli C:\docker C:\docker
+
+# Setup ServiceMonitor
+COPY --from=servicemonitor C:\ServiceMonitor.exe C:\ServiceMonitor.exe
+
+# Update path variable
+RUN $env:PATH = 'C:\docker;' + $env:PATH; `
+    Set-ItemProperty `
+      -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\' `
+      -Name Path `
+      -Value $env:PATH; 
 
 # Copy startup script into container
 COPY start.ps1 .
