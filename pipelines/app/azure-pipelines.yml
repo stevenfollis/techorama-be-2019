@@ -29,6 +29,9 @@ stages:
     displayName: 'Build Linux Container'
     pool:
       name: 'Shared SE - Linux'
+      demands:
+      - agent.os -equals Linux
+      - docker
     variables:
       DOCKER_REGISTRY_IMAGE: dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019
       DOCKER_BASE_IMAGE_BUILD: dtr.west.us.se.dckr.org/official/dotnet-core-sdk:2.1
@@ -92,6 +95,9 @@ stages:
     displayName: 'Build Windows Container'
     pool:
       name: 'Shared SE - Windows'
+      demands:
+      - agent.os -equals Windows_NT
+      - docker
     variables:
       DOCKER_BUILDKIT: 0
       DOCKER_REGISTRY_IMAGE: dtr.west.us.se.dckr.org/se-stevenfollis/techorama-be-2019-windows
@@ -136,6 +142,9 @@ stages:
     displayName: 'Create Multi-Architecture Manifest List'
     pool:
       name: 'Shared SE - Linux'
+      demands:
+      - agent.os -equals Linux
+      - docker
     variables:
       DOCKER_BUILDKIT: 1
       DOCKER_CLI_EXPERIMENTAL: "enabled"
@@ -179,6 +188,9 @@ stages:
     displayName: 'Deploy Container with Helm'
     pool:
       name: 'Shared SE - Linux'
+      demands:
+      - agent.os -equals Linux
+      - docker
     steps:
     - task: DownloadSecureFile@1
       inputs:
