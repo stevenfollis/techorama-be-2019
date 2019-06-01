@@ -23,7 +23,7 @@ trigger:
 
 stages:
 - stage: build
-  displayName: Build
+  displayName: Build & Push Images
   jobs:
   - job: build_linux
     displayName: 'Build Linux Container'
@@ -171,7 +171,7 @@ stages:
       displayName: 'Inspect Manifest List'
 
 - stage: deploy
-  displayName: Deploy
+  displayName: Deploy to Cluster
   dependsOn:
   - build
   jobs:
