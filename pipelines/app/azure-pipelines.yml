@@ -70,7 +70,7 @@ stages:
           $(Agent.TempDirectory)/ucp-bundle-azure-devops.zip
         
         # Load key for use with Docker Content Trust (DCT)
-        docker trust key load $(Agent.TempDirectory)/bundle/key.pem
+        docker trust key load $(Agent.TempDirectory)/bundle/key.pem --name azure-devops
       displayName: 'Setup Docker Client Bundle'
 
     - script: |
